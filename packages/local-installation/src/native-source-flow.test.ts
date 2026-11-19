@@ -321,6 +321,66 @@ test("a restart of local models keeps the model source the person switched to", 
   expect(applyNativeSource).not.toHaveBeenCalled();
 });
 
+test.each(["byok", "subscription"] as const)(
+  "upgrading an instance whose model source was switched to %s leaves local models stopped",
+  async (mode) => {
+    const f = await fixture();
+    await installNativeSource({
+      home: f.home,
+      repo: f.repo,
+      name: "native-upgrade-switched",
+      setupChoice: "local-models",
+      signal: new AbortController().signal,
+      onEvent: () => {},
+    });
+    const state = path.join(f.home, "runtime/localmodels/state");
+    await mkdir(state, { recursive: true });
+    await writeFile(
+      path.join(state, "model-source.json"),
+      JSON.stringify({
+        schema: "localmodels.model-source/v1",
+        mode,
+        runtime: "claude",
+        runtime_model: mode === "byok" ? "custom/model" : "",
+        model_label: null,
+        gateway_url: null,
+        environment: {},
+      }),
+      { mode: 0o600 },
+    );
+    vi.mocked(prepareLocalModels).mockClear();
+    vi.mocked(applyNativeSource).mockClear();
+    // A version upgrade (--resume on a newer checkout) passes no setupChoice.
+    const upgraded = await installNativeSource({
+      home: f.home,
+      repo: f.repo,
+      name: "native-upgrade-switched",
+      signal: new AbortController().signal,
+      onEvent: () => {},
+    });
+    expect(upgraded.code).toBe(0);
+    expect(prepareLocalModels).not.toHaveBeenCalled();
+    expect(applyNativeSource).not.toHaveBeenCalled();
+    // Explicitly choosing local models again via Set Up Again restores them.
+    const explicit = await installNativeSource({
+      home: f.home,
+      repo: f.repo,
+      name: "native-upgrade-switched",
+      setupChoice: "local-models",
+      signal: new AbortController().signal,
+      onEvent: () => {},
+    });
+    expect(explicit.code).toBe(0);
+    expect(prepareLocalModels).toHaveBeenCalledTimes(1);
+    expect(applyNativeSource).toHaveBeenCalledWith(
+      path.resolve(f.home),
+      "local",
+      "pi",
+      expect.any(AbortSignal),
+    );
+  },
+);
+
 test("only TeamHub's process gets the server identity key", async () => {
   const f = await fixture();
   vi.mocked(prepareRuntime).mockResolvedValue({
