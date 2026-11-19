@@ -33,7 +33,9 @@ take precedence.
 - Keep model/provider behavior behind the existing runtime interfaces. The only
   exception is `src/runtime-model-call.ts`: a stateless prompt on the owner's
   Agent Runtime (Codex, Claude or Pi, using its default model) through the
-  Daemon's one-shot `model.invoke`, for tool-less service work such as Agent
+  Daemon's one-shot `model.invoke`. Antigravity has no `model.invoke`, so an
+  Antigravity owner's call runs on Claude on the same Computer, or on Codex
+  when only Codex is ready. It serves tool-less service work such as Agent
   Memory, also used by Memory, by the LLM Wiki, and exposed
   to TeamHub as `POST /v1/model-calls`.
   It is not a Runtime turn and never creates a Context, Local Run, or

@@ -378,7 +378,8 @@ export class RunLoop {
     this.#runtimeType =
       options.runtimeName === "codex" ||
       options.runtimeName === "claude" ||
-      options.runtimeName === "pi"
+      options.runtimeName === "pi" ||
+      options.runtimeName === "antigravity"
         ? options.runtimeName
         : undefined;
     this.#runtimeSession = options.runtimeSession;

@@ -9,7 +9,7 @@ control through Linger's Runner Gateway.
 
 - `internal/daemon`: daemon lifecycle and local reconciliation loop.
 - `internal/process`: process ownership, cancellation, and cleanup.
-- `internal/provider`: Codex/Claude/Pi execution adapters.
+- `internal/provider`: Codex/Claude/Pi/Antigravity execution adapters.
 - `internal/workspace`: local workspace and Runtime-home preparation.
 - `internal/protocol`: the Daemon's routed command/event model. The wire shapes
   come from the generated `contracts/generated/go/runnergateway` module
@@ -44,7 +44,7 @@ stops and names the open file.
 
 `linger-computer-daemon --config <path>` reads the owner-only config emitted by
 the `linger-computer login` flow. It discovers and version-gates the
-configured Codex, Claude, and Pi installations.
+configured Codex, Claude, Pi, and Antigravity installations.
 It performs bounded protocol and authentication probes.
 It periodically refreshes authentication and unavailable Runtimes without a restart.
 The Claude check also probes idle Context homes, because each one can hold its
@@ -63,7 +63,7 @@ from an Operation wire request.
 
 Opening the local Registration store deletes records of retired Runtimes such as
 Hermes; connecting and reconnecting report Registration observations only for
-Codex, Claude and Pi.
+Codex, Claude, Pi and Antigravity.
 
 The owner-only control socket supports Runner inspection and local stop, plus
 managed service start/list/stop. Managed services retain PID, process-group,
@@ -219,9 +219,53 @@ Computer user's own instruction files:
   from the projected `config.toml` and its profiles.
 - Pi runs with `--no-context-files` and an empty `--system-prompt`, so it keeps
   its built-in prompt instead of the user's `SYSTEM.md`.
+- Antigravity is the exception: its ACP server has no switch that turns off
+  the user's own rules, skills and `~/.gemini/config/mcp_config.json`, so an
+  Antigravity run sees them next to the Daemon's instructions and servers.
 
 The user's own Claude Skills and the Skills of plugins they installed are still
 offered to Agents (`internal/workspace/claude_skills.go`).
+
+## Antigravity
+
+The Antigravity CLI (`agy`) runs through its Agent Client Protocol (ACP)
+server, `agy acp`: JSON-RPC 2.0 over stdio, one object per line. Its print
+mode (`agy -p`) is not used, because it signs in only with Google and waits
+for a browser sign-in when signed out.
+
+- Discovery runs `agy --version`, then an ACP `initialize`, then an empty
+  `session/new` in HOME. ACP's authentication-required error (`-32000`) on
+  `session/new` means signed out. No prompt is sent, so a probe stores no
+  conversation.
+- When `session/new` needs authentication and the environment carries
+  `GEMINI_API_KEY` or `GOOGLE_API_KEY`, the adapter selects the
+  `gemini-api-key` method once and retries. A Google sign-in is never
+  replaced by a key.
+- The model catalog is the session's `model` config option: one model per
+  family. A family's reasoning efforts are the levels its
+  `<family>-<level>` entries in `availableModels` name. A Run selects them
+  with `session/set_config_option` (`model`, then `thought_level`).
+- Each Operation runs in its own `agy acp` process; nothing is parked. A
+  first Run opens `session/new`, and its turn-started event reports the
+  session id as the checkpoint, like a Codex thread. Later Runs reopen it with
+  `session/load` and drop the history it replays. An id Antigravity has not
+  stored is not a usable session: `session/load` accepts it, but the prompt
+  then fails, so Linger never assigns one. A stored session replays at least
+  the prompt that made it, so a load that replays no prompt, or that
+  Antigravity refuses, ends as `session_not_found` before anything is
+  emitted, and the Run continues once in a new session. A Run yields to the
+  scheduler only after native work, because its session holds no prompt
+  before that.
+- The Daemon's instructions go in `_meta.antigravity.systemPrompt.append`, and
+  its MCP servers in the session's `mcpServers`.
+- `session/request_permission` goes to the Run's permission review when the
+  Context has one, with `execute` calls reviewed as shell commands. Otherwise
+  the adapter selects the allow option, as Pi runs without review.
+- Antigravity reports a model error, such as a rejected API key, as reply text
+  and ends the turn with `end_turn`. With no structured signal, such a Run
+  completes and the Room shows the text.
+- History reads, provider prepare, Local Skill scans and local models do not
+  support Antigravity.
 
 ## Frozen source
 

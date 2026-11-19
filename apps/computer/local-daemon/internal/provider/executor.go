@@ -580,7 +580,7 @@ func (e Executor) Start(ctx context.Context, spec OperationSpec, emit EmitFunc) 
 		var providerResult native.Outcome
 		var ok bool
 		freshSession := false
-		if spec.OperationKind == "run.start" && spec.Provider != "codex" && spec.Provider != "claude" && spec.Provider != "pi" {
+		if spec.OperationKind == "run.start" && spec.Provider != "codex" && spec.Provider != "claude" && spec.Provider != "pi" && spec.Provider != "antigravity" {
 			payload, marshalErr := json.Marshal(map[string]any{
 				"type": "run.started", "turn_id": stableEventID("turn", spec.TaskID),
 			})

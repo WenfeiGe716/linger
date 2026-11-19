@@ -81,6 +81,7 @@ var runtimeDefinitions = []runtimeDefinition{
 	{"codex", "codex", "app-server"},
 	{"claude", "claude", "stream-json"},
 	{"pi", "pi", "rpc"},
+	{"antigravity", "agy", "acp"},
 }
 
 // ValidateRuntimeSelection accepts an omitted scope or a nonempty unique supported subset.

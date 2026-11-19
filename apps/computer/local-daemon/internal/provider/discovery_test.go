@@ -45,7 +45,7 @@ esac
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(result.Diagnostics) != 3 || result.Diagnostics[0].Status != "ready" || result.Installations["codex"].ExecutablePath != canonical {
+	if len(result.Diagnostics) != 4 || result.Diagnostics[0].Status != "ready" || result.Installations["codex"].ExecutablePath != canonical {
 		t.Fatalf("result=%+v", result)
 	}
 }

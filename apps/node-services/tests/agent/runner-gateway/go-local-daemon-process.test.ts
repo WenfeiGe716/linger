@@ -1122,7 +1122,7 @@ processTest(
           );
         }
         const registrations = connections.at(-1)?.hello.runtime_registrations;
-        expect(registrations).toHaveLength(3);
+        expect(registrations).toHaveLength(4);
         const claude = registrations?.find(
           ({ provider_type }) => provider_type === "claude",
         );

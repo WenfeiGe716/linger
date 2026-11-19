@@ -216,11 +216,11 @@ export interface AgentManagerApplicationOptions {
     readonly isLocalComputerExecutionReady: (computerId: string) => boolean;
     readonly canReadDetachedHistory?: (
       computerId: string,
-      runtimeType: "codex" | "claude" | "pi",
+      runtimeType: "codex" | "claude" | "pi" | "antigravity",
     ) => boolean;
     readonly supportsSessionCompaction?: (
       computerId: string,
-      runtimeType: "codex" | "claude" | "pi",
+      runtimeType: "codex" | "claude" | "pi" | "antigravity",
     ) => boolean;
     readonly subscribeLocalComputerReady?: (
       listener: (computerId: string) => void,

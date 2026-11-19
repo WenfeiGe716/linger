@@ -51,6 +51,7 @@ export function runtimeFailureMessage(
     codex: "Codex",
     claude: "Claude",
     pi: "Pi",
+    antigravity: "Antigravity",
   }[failure.runtime_type];
   if (!runtime) return "Run failed";
   const version =
