@@ -215,7 +215,7 @@ func refreshRuntimeAuthentication(ctx context.Context, current DiscoveryResult, 
 		}
 		if (diagnostic.Type == "pi" || diagnostic.Type == "antigravity") && diagnostic.Status == "ready" {
 			catalogCtx, cancel := context.WithTimeout(ctx, boundedAuthTimeout(options.Timeout))
-			diagnostic.Models, diagnostic.ModelCatalogError = discoverRuntimeModels(catalogCtx, diagnostic.Type, diagnostic.ExecutablePath, environment)
+			diagnostic.Models, diagnostic.ModelCatalogError = probedRuntimeModels(catalogCtx, diagnostic.Type, diagnostic.ExecutablePath, environment, outcome)
 			cancel()
 			if diagnostic.ModelCatalogError != "" {
 				diagnostic.Status, diagnostic.authProbeFailed = "error", false

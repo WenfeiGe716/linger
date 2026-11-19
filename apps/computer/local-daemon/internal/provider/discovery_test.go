@@ -449,3 +449,18 @@ exit 0
 		t.Fatal("Claude stream protocol probe did not run")
 	}
 }
+
+func TestGatewayDiagnosticsLeaveOutAnAntigravityThatIsNotInstalled(t *testing.T) {
+	codex := RuntimeDiagnostic{Type: "codex", Status: "ready"}
+	missing := RuntimeDiagnostic{Type: "antigravity", Status: "not_installed"}
+	signedOut := RuntimeDiagnostic{Type: "antigravity", Status: "authentication_required"}
+	if got := GatewayDiagnostics([]RuntimeDiagnostic{codex, missing}); len(got) != 1 || got[0].Type != "codex" {
+		t.Fatalf("missing Antigravity was sent: %+v", got)
+	}
+	if got := GatewayDiagnostics([]RuntimeDiagnostic{codex, signedOut}); len(got) != 2 {
+		t.Fatalf("installed Antigravity was dropped: %+v", got)
+	}
+	if got := GatewayDiagnostics([]RuntimeDiagnostic{missing}); len(got) != 1 {
+		t.Fatalf("the only diagnostic was dropped: %+v", got)
+	}
+}

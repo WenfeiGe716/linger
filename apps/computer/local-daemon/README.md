@@ -265,7 +265,12 @@ for a browser sign-in when signed out.
   and ends the turn with `end_turn`. With no structured signal, such a Run
   completes and the Room shows the text.
 - History reads, provider prepare, Local Skill scans and local models do not
-  support Antigravity.
+  support Antigravity, so Agent Memory skips Antigravity Agents.
+- The Gateway hello leaves out the Antigravity diagnostic while `agy` is not
+  installed, so such a Computer still connects to an Agent Service released
+  before Antigravity support. Once `agy` is installed, the Agent Service must
+  run this release first. The control API and `runtime check` keep reporting
+  Antigravity as not installed.
 
 ## Frozen source
 

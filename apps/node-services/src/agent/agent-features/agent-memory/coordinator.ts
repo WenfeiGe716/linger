@@ -145,7 +145,7 @@ export class AgentMemoryCoordinator {
        */
       canReadHistory?: (
         computerId: string,
-        runtimeType: "codex" | "claude" | "pi" | "antigravity",
+        runtimeType: "codex" | "claude" | "pi",
       ) => boolean;
       now?: () => number;
     },

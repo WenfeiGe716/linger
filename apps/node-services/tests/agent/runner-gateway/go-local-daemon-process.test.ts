@@ -1122,7 +1122,8 @@ processTest(
           );
         }
         const registrations = connections.at(-1)?.hello.runtime_registrations;
-        expect(registrations).toHaveLength(4);
+        // Antigravity is not installed here, so the hello leaves it out.
+        expect(registrations).toHaveLength(3);
         const claude = registrations?.find(
           ({ provider_type }) => provider_type === "claude",
         );

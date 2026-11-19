@@ -31,7 +31,7 @@ export interface AgentMemoryServicesOptions {
    */
   readonly canReadHistory?: (
     computerId: string,
-    runtimeType: "codex" | "claude" | "pi" | "antigravity",
+    runtimeType: "codex" | "claude" | "pi",
   ) => boolean;
   readonly now?: () => number;
 }

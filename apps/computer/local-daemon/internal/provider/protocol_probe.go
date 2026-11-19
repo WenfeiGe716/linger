@@ -30,6 +30,9 @@ type runtimeProbeOutcome struct {
 	Code             string
 	Message          string
 	protocolVerified bool
+	// catalog is the model list an authentication probe already read, so
+	// discovery does not start the Runtime a second time for it.
+	catalog *native.ModelList
 }
 
 func probeRuntime(ctx context.Context, runtimeType, executable string, environment map[string]string, timeout time.Duration, version string, runtimeHomeRoot ...string) runtimeProbeOutcome {

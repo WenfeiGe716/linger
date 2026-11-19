@@ -25,7 +25,7 @@ func probeAntigravityAuthentication(ctx context.Context, executable string, envi
 	if probe.AuthenticationRequired {
 		return runtimeProbeOutcome{Status: "authentication_required", Code: "RUNTIME_AUTHENTICATION_REQUIRED", Message: "Open agy and sign in with Google, or set GEMINI_API_KEY, as the Computer user"}
 	}
-	return runtimeProbeOutcome{Status: "ready"}
+	return runtimeProbeOutcome{Status: "ready", catalog: &probe.Models}
 }
 
 // antigravityLiveReply runs the live-check prompt as one ACP turn in HOME.
