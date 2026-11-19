@@ -268,8 +268,10 @@ for a browser sign-in when signed out.
   support Antigravity, so Agent Memory skips Antigravity Agents.
 - The Gateway hello leaves out the Antigravity diagnostic while `agy` is not
   installed, so such a Computer still connects to an Agent Service released
-  before Antigravity support. Once `agy` is installed, the Agent Service must
-  run this release first. The control API and `runtime check` keep reporting
+  before Antigravity support. When `agy` is installed later, the next
+  diagnostics update reports it and the Gateway adds its Runtime
+  Registration, so no restart is needed. Once `agy` is installed, the Agent
+  Service must run this release first. The control API and `runtime check` keep reporting
   Antigravity as not installed.
 
 ## Frozen source
