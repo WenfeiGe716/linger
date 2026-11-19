@@ -588,7 +588,20 @@ export async function stopLocalmodels(
     installed?: (home: string) => Promise<boolean>;
   } = {},
 ): Promise<void> {
-  if (!(await (dependencies.installed ?? hasPinnedTool)(home))) return;
+  let installed: boolean;
+  try {
+    installed = await (dependencies.installed ?? hasPinnedTool)(home);
+  } catch (error) {
+    throw Object.assign(
+      new Error(error instanceof Error ? error.message : String(error), {
+        cause: error,
+      }),
+      {
+        code: "LOCALMODELS_KIT_VERIFICATION_FAILED",
+      },
+    );
+  }
+  if (!installed) return;
   const run =
     dependencies.run ??
     ((home, args, options = {}) =>
