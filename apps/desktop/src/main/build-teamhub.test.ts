@@ -1,4 +1,5 @@
-import { execFileSync, type SpawnSyncOptions } from "node:child_process";
+import { execFileSync, type SpawnOptions } from "node:child_process";
+import { EventEmitter } from "node:events";
 import {
   mkdirSync,
   mkdtempSync,
@@ -8,6 +9,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { PassThrough } from "node:stream";
 import { gzipSync } from "node:zlib";
 
 import { afterEach, expect, it, vi } from "vitest";
@@ -24,24 +26,34 @@ vi.mock("node:child_process", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:child_process")>();
   return {
     ...actual,
-    spawnSync: (command: string, args: string[], options: SpawnSyncOptions) => {
-      if (command !== "go") return actual.spawnSync(command, args, options);
-      if (args[0] === "env" && args[1] === "GOVERSION")
-        return { status: 0, stdout: "go1.26.5\n" };
-      const output = args[args.indexOf("-o") + 1];
-      if (args[0] !== "build" || !args.includes("-o") || !output)
-        throw new Error("Unexpected Go invocation in build fixture");
-      writeFileSync(
-        output,
-        JSON.stringify({
-          args,
-          goos: options.env?.GOOS,
-          goarch: options.env?.GOARCH,
-          cgo: options.env?.CGO_ENABLED,
-          cwd: options.cwd,
-        }),
-      );
-      return { status: 0 };
+    spawn: (command: string, args: string[], options: SpawnOptions) => {
+      if (command !== "go") return actual.spawn(command, args, options);
+      const child = new EventEmitter() as EventEmitter & {
+        stdout: PassThrough;
+      };
+      child.stdout = new PassThrough();
+      if (args[0] === "env" && args[1] === "GOVERSION") {
+        process.nextTick(() => {
+          child.stdout.end("go1.26.5\n");
+          child.emit("close", 0);
+        });
+      } else {
+        const output = args[args.indexOf("-o") + 1];
+        if (args[0] !== "build" || !args.includes("-o") || !output)
+          throw new Error("Unexpected Go invocation in build fixture");
+        writeFileSync(
+          output,
+          JSON.stringify({
+            args,
+            goos: options.env?.GOOS,
+            goarch: options.env?.GOARCH,
+            cgo: options.env?.CGO_ENABLED,
+            cwd: options.cwd,
+          }),
+        );
+        process.nextTick(() => child.emit("close", 0));
+      }
+      return child;
     },
   };
 });
