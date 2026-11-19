@@ -589,9 +589,7 @@ export class RunnerConnections {
         base: Pick<Observation, "tenant_id" | "owner_actor_id">,
         diagnostic: RunnerHello["runtime_diagnostics"][number],
       ): Observation => {
-        const available =
-          diagnostic.status === "ready" ||
-          diagnostic.status === "authentication_required";
+        const available = connection.hello.runtimes.includes(diagnostic.type);
         return {
           ...base,
           provider_type: diagnostic.type,
@@ -618,8 +616,7 @@ export class RunnerConnections {
       const { tenantId, ownerActorId } = owner(connection);
       for (const diagnostic of envelope.runtime_diagnostics) {
         if (
-          (diagnostic.status === "ready" ||
-            diagnostic.status === "authentication_required") &&
+          connection.hello.runtimes.includes(diagnostic.type) &&
           !registrations.some(
             ({ provider_type }) => provider_type === diagnostic.type,
           )
